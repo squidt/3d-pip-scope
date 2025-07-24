@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://p11v4h1nbfre"]
+
+[node name="Reticle" type="Node2D"]
+
+[node name="Line2D" type="Line2D" parent="."]
+points = PackedVector2Array(512, 256, 0, 256)
+width = 4.0
+default_color = Color(1, 0, 0, 1)
+
+[node name="Line2D2" type="Line2D" parent="."]
+points = PackedVector2Array(256, 512, 256, 256)
+width = 4.0
+default_color = Color(1, 0, 0, 1)
