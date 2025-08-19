@@ -31,6 +31,7 @@ shader = ExtResource("2_7nwjg")
 shader_parameter/reticle_texture = SubResource("ViewportTexture_p50to")
 shader_parameter/scope_texture = SubResource("ViewportTexture_7nwjg")
 shader_parameter/scope_radius = 0.017
+shader_parameter/scope_inner_radius = 1.0
 shader_parameter/reticle_depth = 3.0
 shader_parameter/parallax_factor = 0.1
 shader_parameter/view_edge_fade_factor = 0.05

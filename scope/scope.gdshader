@@ -10,6 +10,8 @@ uniform sampler2D reticle_texture: repeat_disable;
 uniform sampler2D scope_texture: repeat_disable;
 /** Radius for the scope's physical outer radius */
 uniform float scope_radius = 0.025;
+/** Percentage of the scope_radius that is rendered before the view starts fading to black */
+uniform float scope_inner_radius: hint_range(0.0, 1.0, 0.001) = 1.0;
 /** Depth before the reticle appears */
 uniform float reticle_depth = 2.0;
 uniform float parallax_factor: hint_range(0.0, .3, 0.001) = 0.1;
@@ -85,7 +87,8 @@ vec3 get_scope_edge_fade_effect(vec2 adj_uv, vec4 scope_sample) {
 	vec2 center_uv = vec2(0.5);
 	float dist = length(adj_uv - center_uv);
 
-	float fade_edge_end = 0.5;
+	// Divide by two, UV max is .5 and scope_inner_radius is 0.0 - 1.0
+	float fade_edge_end = scope_inner_radius / 2.0;
 	float fade_edge_start = fade_edge_end - view_edge_fade_factor;
 	float fade_edge = smoothstep(fade_edge_start, fade_edge_end, dist);
 	return mix(scope_sample.rgb, BLACK, fade_edge);
