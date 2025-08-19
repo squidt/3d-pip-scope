@@ -83,10 +83,12 @@ mesh = SubResource("QuadMesh_f6iyf")
 
 [node name="ReticleView" type="SubViewport" parent="Display"]
 transparent_bg = true
+use_hdr_2d = true
 
 [node name="Reticle" parent="Display/ReticleView" instance=ExtResource("3_bdhjp")]
 
 [node name="ScopeView" type="SubViewport" parent="Display"]
+use_hdr_2d = true
 
 [node name="Camera3D" type="Camera3D" parent="Display/ScopeView"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.175332)
