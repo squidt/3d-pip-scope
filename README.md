@@ -3,4 +3,5 @@
 
 
 # Video Tutorial
+video is for branch stable-v1
 https://www.youtube.com/watch?v=VP_38F9qLh8
