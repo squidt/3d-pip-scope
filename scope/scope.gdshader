@@ -1,9 +1,9 @@
 shader_type spatial;
 render_mode unshaded, blend_mix, cull_back, depth_draw_opaque, shadows_disabled;
 
-
 const vec3 BLACK = vec3(0.0);
 const float NOT_ZERO = 1e-5;
+
 
 /** Viewport texture from a 2D Scene that will become the reticle */
 uniform sampler2D reticle_texture: repeat_disable;
@@ -14,21 +14,22 @@ uniform float scope_radius = 0.025;
 /** Percentage of the scope_radius that is rendered before the view starts fading to black */
 uniform float scope_inner_radius: hint_range(0.0, 1.0, 0.001) = 1.0;
 /** Depth before the reticle appears */
-uniform float reticle_depth = 2.0;
-uniform float parallax_factor: hint_range(0.0, .3, 0.001) = 0.1;
-uniform float view_edge_fade_factor: hint_range(0.0, 0.5, 0.001) = .05;
+uniform float scope_depth = 2.0;
+/** Size of the scope view's fade-to-black */
+uniform float scope_fade_size: hint_range(0.0, 0.5, 0.001) = .05;
+/** Strength of the parallax between the scope's view and reticle */
+uniform float scope_parallax_factor: hint_range(0.0, .3, 0.001) = 0.1;
 
-// Lense Distortion uniforms
+
 group_uniforms Lens_Distortion;
 uniform float lens_bevel_start: hint_range(0.0, 1.0, 0.01) = 0.78;
 uniform float lens_curvature: hint_range(0.0, .25, 0.001) = 0.03;
 
+
 group_uniforms Eyebox;
-/**
-Position of eyebox. When the eye is this distance away it is considered perfect */
+/** Position of eyebox. When the eye is this distance away it is considered perfect */
 uniform float eyebox_position = .15;
-/**
-Forgiveness for user eye positioning. Allows a +- tolerance around "eyebox_position" */
+/** Forgiveness for user eye positioning. Allows a +- tolerance around "eyebox_position" */
 uniform float eyebox_tolerance = 0.005;
 /** Specify the distance over which the scope shadow will fade to black */
 uniform float eyebox_fade_distance = 0.05;
@@ -40,12 +41,9 @@ uniform float shadow_enabled: hint_range(0.0, 1.0, 1.0) = 1.0;
 Percent of the scope that will display before the scope shadow's fade starts.
 0.0 is fully dark, 1.0 is fully displayed (except for the scope shadow's fade).*/
 uniform float shadow_inner_radius: hint_range(0.0, 1.0, 0.01) = 1.0;
-/**
-Factor for the eyebox's scope shadow */
+/** Factor for the eyebox's scope shadow */
 uniform float shadow_fade_factor = 0.2;
-
-/**
-Changes how sensitive the scope-shadow is to movement */
+/** Changes how sensitive the scope-shadow is to movement */
 uniform float shadow_movement_factor: hint_range(0.5, 1.0, 0.01) = 1.0;
 
 
@@ -54,55 +52,16 @@ varying vec3 view;
 
 // "Pushes" the scope uv into the scope making it appear deeper inside the scope.
 // Returns altered UV
-vec2 get_depth_effect(vec2 uv, vec3 direcion) {
-	vec2 result = uv - direcion.xy * (reticle_depth * 2.0);
+vec2 get_depth_uv(vec2 uv, vec3 direcion) {
+	vec2 result = uv - direcion.xy * (scope_depth * 2.0);
 	result -= vec2(0.5);
 	result *= 0.5;
 	return result + 0.5;
 }
 
 
-// Creates the scope shadow effect
-// Returns color
-vec3 get_scope_shadow_effect(vec2 uv, vec4 scope_sample, vec3 view_dir, float eye_distance) {
-	float delta = eye_distance - eyebox_position;
-
-	vec2 eye_offset = view_dir.xy / -shadow_movement_factor;
-	//((uv - vec2(0.5)) / 2.0)
-	vec2 shifted_uv = uv - eye_offset;
-	float dist = length((shifted_uv - vec2(0.5)) * 2.0);
-
-	// Fade logic for close / far
-	float fade_near = smoothstep(-eyebox_tolerance, -eyebox_tolerance - eyebox_fade_distance, delta);
-	float fade_far = smoothstep( eyebox_tolerance, eyebox_tolerance + eyebox_fade_distance, delta);
-	float distance_fade = max(fade_near, fade_far);
-
-	// Scale scope shadow radius to distance
-	float dynamic_radius = mix(0.0, shadow_inner_radius, 1.0 - distance_fade);
-	float inner = dynamic_radius - shadow_fade_factor;
-	float outer = dynamic_radius;
-	float fade = smoothstep(inner, outer, dist);
-
-	return mix(scope_sample.rgb, BLACK, fade*shadow_enabled);
-}
-
-
-// Scope viewport edge fade
-// Returns color
-vec3 get_scope_edge_fade_effect(vec2 adj_uv, vec4 scope_sample) {
-	vec2 center_uv = vec2(0.5);
-	float dist = length(adj_uv - center_uv);
-
-	// Divide by two, UV max is .5 and scope_inner_radius is 0.0 - 1.0
-	float fade_edge_end = scope_inner_radius / 2.0;
-	float fade_edge_start = fade_edge_end - view_edge_fade_factor;
-	float fade_edge = smoothstep(fade_edge_start, fade_edge_end, dist);
-	return mix(scope_sample.rgb, BLACK, fade_edge);
-}
-
-
 // Apply a distortion effect near the edge of the lens to simulate bevelled glass.
-vec2 get_bevel_distort(vec2 uv) {
+vec2 get_bevel_uv(vec2 uv) {
 	const float MAX_RADIUS = 0.5;
 	
 	// Inner/ outer bevel radius as a proportion of the scope_inner_radius
@@ -134,6 +93,42 @@ vec2 get_bevel_distort(vec2 uv) {
 }
 
 
+// Creates the scope shadow effect
+vec3 get_scope_shadow_color(vec2 uv, vec4 scope_sample, vec3 view_dir, float eye_distance) {
+	float delta = eye_distance - eyebox_position;
+
+	vec2 eye_offset = view_dir.xy / -shadow_movement_factor;
+	vec2 shifted_uv = uv - eye_offset;
+	float dist = length((shifted_uv - vec2(0.5)) * 2.0);
+
+	// Fade logic for close / far
+	float fade_near = smoothstep(-eyebox_tolerance, -eyebox_tolerance - eyebox_fade_distance, delta);
+	float fade_far = smoothstep( eyebox_tolerance, eyebox_tolerance + eyebox_fade_distance, delta);
+	float distance_fade = max(fade_near, fade_far);
+
+	// Scale scope shadow radius to distance
+	float dynamic_radius = mix(0.0, shadow_inner_radius, 1.0 - distance_fade);
+	float inner = dynamic_radius - shadow_fade_factor;
+	float outer = dynamic_radius;
+	float fade = smoothstep(inner, outer, dist);
+
+	return mix(scope_sample.rgb, BLACK, fade*shadow_enabled);
+}
+
+
+// Scope viewport edge fade
+vec3 get_scope_fade_color(vec2 adj_uv, vec4 scope_sample) {
+	vec2 center_uv = vec2(0.5);
+	float dist = length(adj_uv - center_uv);
+
+	// Divide by two, UV max is .5 and scope_inner_radius is 0.0 - 1.0
+	float fade_edge_end = scope_inner_radius / 2.0;
+	float fade_edge_start = fade_edge_end - scope_fade_size;
+	float fade_edge = smoothstep(fade_edge_start, fade_edge_end, dist);
+	return mix(scope_sample.rgb, BLACK, fade_edge);
+}
+
+
 float get_in_bounds_factor(vec2 uv) {
 	const float lower = 0.01;
 	const float upper = 0.99;
@@ -152,16 +147,16 @@ void fragment() {
 
 	// Inside of scope
 	if (length(view) <= scope_radius) {
-		vec2 depth_uv = get_depth_effect(UV, view_dir);
-		vec2 bevel_uv = get_bevel_distort(depth_uv);
+		vec2 depth_uv = get_depth_uv(UV, view_dir);
+		vec2 bevel_uv = get_bevel_uv(depth_uv);
 
 		vec4 scope_sample = texture(scope_texture, bevel_uv);
-		scope_sample.rgb = get_scope_shadow_effect(UV, scope_sample, view_dir, eye_distance);
-		scope_sample.rgb = get_scope_edge_fade_effect(depth_uv, scope_sample);
+		scope_sample.rgb = get_scope_shadow_color(UV, scope_sample, view_dir, eye_distance);
+		scope_sample.rgb = get_scope_fade_color(depth_uv, scope_sample);
 
 		// This setup seems to cause a parallax-like effect
-		// minimize using scope_parallax_factor
-		vec2 parallax_uv = mix(depth_uv, UV, parallax_factor);
+		// minimize using scope_scope_parallax_factor
+		vec2 parallax_uv = mix(depth_uv, UV, scope_parallax_factor);
 		vec4 reticle_sample = texture(reticle_texture, parallax_uv);
 
 		// Mask to in-bounds to discard reticle sample "stretching to infinity" at edge of UV
