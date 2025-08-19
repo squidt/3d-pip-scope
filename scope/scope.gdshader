@@ -48,8 +48,8 @@ varying vec3 view;
 
 // "Pushes" the scope uv into the scope making it appear deeper inside the scope.
 // Returns altered UV
-vec2 get_depth_effect(vec2 uv, vec3 direcion, float depth) {
-	vec2 result = uv - direcion.xy * (depth * 2.0);
+vec2 get_depth_effect(vec2 uv, vec3 direcion) {
+	vec2 result = uv - direcion.xy * (reticle_depth * 2.0);
 	result -= vec2(0.5);
 	result *= 0.5;
 	return result + 0.5;
@@ -115,14 +115,14 @@ void fragment() {
 	if (length(view) <= scope_radius) {
 		vec2 adj_uv = get_depth_effect(UV, view_dir, reticle_depth);
 
-		// This setup seems to cause a parallax-like effect
-		// minimize using parallax_factor
-		vec2 parallax_uv = mix(adj_uv, UV, parallax_factor);
 
 		vec4 scope_sample = texture(scope_texture, adj_uv);
 		scope_sample.rgb = get_scope_shadow_effect(UV, scope_sample, view_dir, eye_distance);
 		scope_sample.rgb = get_scope_edge_fade_effect(adj_uv, scope_sample);
 
+		// This setup seems to cause a parallax-like effect
+		// minimize using parallax_factor
+		vec2 parallax_uv = mix(adj_uv, UV, parallax_factor);
 		vec4 reticle_sample = texture(reticle_texture, parallax_uv);
 
 		// Mask to in-bounds to discard reticle sample "stretching to infinity" at edge of UV
