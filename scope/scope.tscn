@@ -1,10 +1,11 @@
-[gd_scene load_steps=13 format=3 uid="uid://b5faf0iw7sppu"]
+[gd_scene load_steps=14 format=3 uid="uid://b5faf0iw7sppu"]
 
 [ext_resource type="PackedScene" uid="uid://b831u8gysstm3" path="res://scope/hunting_scope.glb" id="1_p50to"]
 [ext_resource type="Shader" uid="uid://ct2exa55quurp" path="res://scope/scope.gdshader" id="2_7nwjg"]
 [ext_resource type="Material" uid="uid://bsypn31yhytkx" path="res://scope/grey.material" id="2_bdhjp"]
 [ext_resource type="PackedScene" uid="uid://p11v4h1nbfre" path="res://scope/reticle.tscn" id="3_bdhjp"]
 [ext_resource type="Material" uid="uid://bne38n6jqewpe" path="res://scope/glass.material" id="3_f6iyf"]
+[ext_resource type="Texture2D" uid="uid://cu4umfifvrjdx" path="res://icon.svg" id="6_f6iyf"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_bdhjp"]
 
@@ -31,16 +32,19 @@ shader = ExtResource("2_7nwjg")
 shader_parameter/reticle_texture = SubResource("ViewportTexture_p50to")
 shader_parameter/scope_texture = SubResource("ViewportTexture_7nwjg")
 shader_parameter/scope_radius = 0.017
-shader_parameter/scope_inner_radius = 1.0
-shader_parameter/reticle_depth = 3.0
+shader_parameter/scope_inner_radius = 0.65
+shader_parameter/reticle_depth = 0.7
 shader_parameter/parallax_factor = 0.1
-shader_parameter/view_edge_fade_factor = 0.05
+shader_parameter/view_edge_fade_factor = 0.037
+shader_parameter/lens_bevel_start = 0.9
+shader_parameter/lens_curvature = 0.15
 shader_parameter/eyebox_position = 0.15
 shader_parameter/eyebox_tolerance = 0.005
 shader_parameter/eyebox_fade_distance = 0.05
+shader_parameter/shadow_enabled = 0.0
 shader_parameter/shadow_inner_radius = 1.0
 shader_parameter/shadow_fade_factor = 0.2
-shader_parameter/shadow_movement_factor = 0.5
+shader_parameter/shadow_movement_factor = 1.0
 
 [sub_resource type="QuadMesh" id="QuadMesh_f6iyf"]
 size = Vector2(0.04, 0.04)
@@ -69,6 +73,19 @@ material_override = SubResource("StandardMaterial3D_jpuf7")
 
 [node name="BodyLenseRear" parent="hunting_scope" index="6"]
 material_override = ExtResource("3_f6iyf")
+
+[node name="hunting_scope2" parent="." instance=ExtResource("1_p50to")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, -0.0130388, -2)
+
+[node name="hunting_scope3" parent="." instance=ExtResource("1_p50to")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, -0.141039, -2)
+
+[node name="hunting_scope4" parent="." instance=ExtResource("1_p50to")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, -0.220039, -2)
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.135, -0.854, -30.702)
+texture = ExtResource("6_f6iyf")
 
 [node name="Display" type="Node3D" parent="."]
 
