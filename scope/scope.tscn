@@ -92,6 +92,6 @@ use_hdr_2d = true
 
 [node name="Camera3D" type="Camera3D" parent="Display/ScopeView"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.175332)
-fov = 20.0
+fov = 8.0
 
 [editable path="hunting_scope"]
