@@ -31,15 +31,19 @@ shader = ExtResource("2_7nwjg")
 shader_parameter/reticle_texture = SubResource("ViewportTexture_p50to")
 shader_parameter/scope_texture = SubResource("ViewportTexture_7nwjg")
 shader_parameter/scope_radius = 0.017
-shader_parameter/reticle_depth = 3.0
-shader_parameter/parallax_factor = 0.1
-shader_parameter/view_edge_fade_factor = 0.05
+shader_parameter/scope_inner_radius = 0.7
+shader_parameter/scope_depth = 1.0
+shader_parameter/scope_fade_size = 0.03
+shader_parameter/scope_parallax_factor = 0.1
+shader_parameter/lens_bevel_start = 0.9
+shader_parameter/lens_curvature = 0.15
 shader_parameter/eyebox_position = 0.15
 shader_parameter/eyebox_tolerance = 0.005
 shader_parameter/eyebox_fade_distance = 0.05
+shader_parameter/shadow_enabled = 1.0
 shader_parameter/shadow_inner_radius = 1.0
 shader_parameter/shadow_fade_factor = 0.2
-shader_parameter/shadow_movement_factor = 0.5
+shader_parameter/shadow_movement_factor = 1.0
 
 [sub_resource type="QuadMesh" id="QuadMesh_f6iyf"]
 size = Vector2(0.04, 0.04)
@@ -82,13 +86,15 @@ mesh = SubResource("QuadMesh_f6iyf")
 
 [node name="ReticleView" type="SubViewport" parent="Display"]
 transparent_bg = true
+use_hdr_2d = true
 
 [node name="Reticle" parent="Display/ReticleView" instance=ExtResource("3_bdhjp")]
 
 [node name="ScopeView" type="SubViewport" parent="Display"]
+use_hdr_2d = true
 
 [node name="Camera3D" type="Camera3D" parent="Display/ScopeView"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.175332)
-fov = 20.0
+fov = 8.0
 
 [editable path="hunting_scope"]
